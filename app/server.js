@@ -1,12 +1,19 @@
-let express = require("express");
+const pg = require("pg");
+const express = require("express");
+
 let app = express();
 let port = 3000;
 let hostname = "localhost";
+
 app.use(express.static("public"));
 
-const db = JSON.parse(fs.readFileSync("./env.json", "utf8"));
+const env = require("../env.json");
+const Pool = pg.Pool;
+const pool = new Pool(env);
 
-const pool = new Pool(db);
+pool.connect().then(function () {
+  console.log(`Connected to database ${env.database}`);
+});
 
 app.use(express.json());
 app.use(express.static("public"));
