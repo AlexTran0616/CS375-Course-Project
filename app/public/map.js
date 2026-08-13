@@ -3,7 +3,7 @@ let markerX = document.getElementById("x");
 let markerY = document.getElementById("y");
 let markerContent = document.getElementById("content");
 let addPinButton = document.getElementById("addPin");
-
+//let markers = new Array();
 L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'}).addTo(map);
 map.doubleClickZoom.disable();
 
@@ -16,7 +16,9 @@ function addMarker(event){
 addPinButton.addEventListener("click", addMarker);
 
 map.on('dblclick', function(event) {
-    let marker = L.marker(event.latlng).addTo(map);
+    let marker = L.marker(event.latlng);
+    let contentSaved = false;
+    marker.addTo(map);
 
     let popupContent = `
         <input type="text" id="popupInput" placeholder="Enter content">
@@ -26,10 +28,19 @@ map.on('dblclick', function(event) {
     marker.bindPopup(popupContent);
 
     marker.on('popupopen', () => {
-        document.getElementById('popupSave').addEventListener('click', () => {
+        if(contentSaved){
+            document.getElementById("deleteButton").addEventListener('click', () => {
+                console.log("DELETE");
+                map.removeLayer(marker);
+            });
+        }else{
+            document.getElementById('popupSave').addEventListener('click', () => {
             let text = document.getElementById('popupInput').value;
-            marker.setPopupContent(text);
+            marker.setPopupContent(`${text}
+                                    <input type='button' value='Delete this marker' id='deleteButton'/>`);
+            contentSaved = true;
         });
+        }
     });
 
     marker.openPopup();
