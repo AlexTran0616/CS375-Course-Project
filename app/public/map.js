@@ -8,9 +8,34 @@ L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution: '&cop
 map.doubleClickZoom.disable();
 
 function addMarker(event){
-    L.marker([parseInt(markerX.value), parseInt(markerY.value)]).addTo(map)
-    .bindPopup(content.value)
-    .openPopup();
+    let marker = L.marker([parseInt(markerX.value), parseInt(markerY.value)]);
+    let text = document.getElementById('content').value;
+    let file = document.getElementById('popupImageInput').files[0];
+
+    let finalize = (imgSrc) => {
+        marker.bindPopup(`
+            ${imgSrc ? `<img src="${imgSrc}" style="max-width:150px;"><br>` : ""}
+            ${text}
+            <br><input type='button' value='Delete this marker' id='deleteButton'/>
+        `);
+    };
+
+    if(file){
+        let reader = new FileReader();
+        reader.onload = () => finalize(reader.result);
+        reader.readAsDataURL(file);
+    } else {
+        finalize(null);
+    }
+    
+    marker.on('popupopen', () => {
+        document.getElementById("deleteButton").addEventListener('click', () => {
+            console.log("DELETE");
+            map.removeLayer(marker);
+        });
+    })
+    marker.addTo(map);
+    marker.openPopup();
 }
 
 addPinButton.addEventListener("click", addMarker);
@@ -22,6 +47,7 @@ map.on('dblclick', function(event) {
 
     let popupContent = `
         <input type="text" id="popupInput" placeholder="Enter content">
+        <input type="file" id="popupImageInput" accept="image/*">
         <button id="popupSave">Save</button>
     `;
 
@@ -35,11 +61,26 @@ map.on('dblclick', function(event) {
             });
         }else{
             document.getElementById('popupSave').addEventListener('click', () => {
-            let text = document.getElementById('popupInput').value;
-            marker.setPopupContent(`${text}
-                                    <input type='button' value='Delete this marker' id='deleteButton'/>`);
-            contentSaved = true;
-        });
+                let text = document.getElementById('popupInput').value;
+                let file = document.getElementById('popupImageInput').files[0];
+
+                let finalize = (imgSrc) => {
+                    marker.setPopupContent(`
+                        ${imgSrc ? `<img src="${imgSrc}" style="max-width:150px;"><br>` : ""}
+                        ${text}
+                        <br><input type='button' value='Delete this marker' id='deleteButton'/>
+                    `);
+                    contentSaved = true;
+                };
+
+                if(file){
+                    let reader = new FileReader();
+                    reader.onload = () => finalize(reader.result);
+                    reader.readAsDataURL(file);
+                } else {
+                    finalize(null);
+                }
+            });
         }
     });
 
