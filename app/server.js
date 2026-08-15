@@ -40,23 +40,37 @@ app.post("/register", async (req, res) => {
 
 app.post("/login", async (req, res) => {
     const username = req.body.username;
+    const password = req.body.password;
 
     try {
         const result = await pool.query(
-            "SELECT * FROM users WHERE username = $1",
-            [username]
+            "SELECT * FROM users WHERE username = $1 AND password = $2",
+            [username, password]
         );
 
-        console.log("Retrieved user:", result.rows[0]);
+        if (result.rows.length === 0) {
+            return res.status(401).json({
+                success: false,
+                error: "Invalid username or password."
+            });
+        }
 
-        res.json(result.rows[0]);
+        console.log("Logged in user:", result.rows[0]);
+
+        res.json({
+            success: true,
+            message: "Login successful!"
+        });
 
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: "Database error" });
+
+        res.status(500).json({
+            success: false,
+            error: "Database error"
+        });
     }
 });
-
 
 app.listen(port, hostname, () => {
   console.log(`Server running: http://${hostname}:${port}`);
