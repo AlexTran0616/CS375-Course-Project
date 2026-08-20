@@ -1,7 +1,7 @@
 let map = L.map('map').setView([51.505, -0.09], 13);
 //let markers = new Array();
 L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'}).addTo(map);
-
+map.doubleClickZoom.disable();
 let msPerDay = 1000 * 60 * 60 * 24;
 let timelineStart;
 let timelineEnd;
@@ -271,6 +271,26 @@ addMarkerButton.addEventListener('click', function () {
     xCoordinateInput.value = "";
     titleInput.value = "";
     eventDateInput.value = "";
+});
+map.on('dblclick', function(event) {
+    let today = new Date();
+    today.setHours(0,0,0,0);
+    let record = {
+        id: nextMarkerId,
+        lat: event.latlng.lat,
+        lng: event.latlng.lng,
+        title: "",
+        description: "",
+        eventDate: today,
+        imageSrc: null,
+        leafletMarker: null
+    };
+    nextMarkerId++;
+    console.log("adding marker", record);
+    createLeafletMarkerForRecord(record, false);
+    markers.push(record);
+    recalculateTimelineBounds();
+    filterMarkersByTimeline();
 });
 timelineSlider.addEventListener('input', function () {
     updateTimelineLabels();
