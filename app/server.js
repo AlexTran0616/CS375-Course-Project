@@ -13,6 +13,8 @@ const pool = new Pool(env);
 
 pool.connect().then(function () {
   console.log(`Connected to database ${env.database}`);
+}).catch(function (error) {
+    console.log("Could not connect to database:", error.message);
 });
 
 app.use(express.json());
