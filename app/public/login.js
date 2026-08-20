@@ -23,15 +23,21 @@ document.querySelector("#login").addEventListener("click", async function () {
         const data = await response.json();
 
         if (response.ok && data.success) {
-            console.log("Login successful:", data);
 
-            window.location.href = "register.html";
+            console.log("Login successful:", data);
+            localStorage.setItem("userID", data.id);
+            window.location.href = "search.html";
+
         } else {
+
             alert(data.error || "Invalid username or password.");
+
         }
 
     } catch (error) {
+
         console.error("Login error:", error);
         alert("Something went wrong while logging in.");
+
     }
 });

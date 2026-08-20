@@ -15,6 +15,22 @@ form {
     flex-direction: column;
     width: 200px;
 }
+
+.searchSection {
+    width: auto;
+}
+
+.friendsSection {
+    width: auto;
+}
+
+body {
+    display: grid;
+    grid-template-columns: 1fr 350px;
+    column-gap: 100px;
+    padding-right: 50px;
+}
+    
 * {
     box-sizing: border-box;
     font-family: 'Black Han Sans', sans-serif;
