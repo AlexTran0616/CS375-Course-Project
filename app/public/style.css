@@ -23,14 +23,14 @@ form {
 .friendsSection {
     width: auto;
 }
-
+/*
 body {
     display: grid;
     grid-template-columns: 1fr 350px;
     column-gap: 100px;
     padding-right: 50px;
 }
-    
+  */  
 * {
     box-sizing: border-box;
     font-family: 'Black Han Sans', sans-serif;
@@ -118,6 +118,13 @@ body {
     margin-top: 10px;
     background: #d9d9d9;
     border: 1px solid black;
+    cursor: pointer;
+}
+.save-mapline-button {
+    background: #faa40e;
+    border: 2px solid black;
+    padding: 16px 20px;
+    font-size: 18px;
     cursor: pointer;
 }
 .timeline-row {

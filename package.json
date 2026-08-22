@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "cd app && node server.js"
+    "start": "cd app && node server.js",
+    "setup": "psql -U postgres -f setup.sql"
   },
   "repository": {
     "type": "git",

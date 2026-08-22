@@ -1,5 +1,4 @@
-let map = L.map('map').setView([51.505, -0.09], 13);
-//let markers = new Array();
+let map = L.map('map').setView([39.956, -75.195], 15);
 L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'}).addTo(map);
 map.doubleClickZoom.disable();
 let msPerDay = 1000 * 60 * 60 * 24;
@@ -13,8 +12,9 @@ let monthNames = [
     "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"
 ];
 let nextMarkerId = 1;
+let newMarkers = [];
+let deletedMarkers = [];
 let myMarkers = [];
-//let markers = new Array();
 let markers = myMarkers;
 let isReadOnly = false;
 let currentEditId = null;
@@ -35,6 +35,9 @@ let editDescriptionInput = document.getElementById("editDescriptionInput");
 let editImageInput = document.getElementById("editImageInput");
 let editImagePreview = document.getElementById("editImagePreview");
 let editMarkerDoneButton = document.getElementById("editMarkerDoneButton");
+let saveMaplineButton = document.getElementById("saveMaplineButton");
+addMarkerPanel.classList.add("hidden");
+
 function formatDateLabel(date) {
     return monthNames[date.getMonth()] + " " + date.getFullYear();
 }
@@ -319,7 +322,7 @@ function viewFriendMapline(friendMarkerData, friendName) {
     }
     markers = friendRecords;
     isReadOnly = true;
-    addMarkerPanel.classList.add("hidden");
+    //addMarkerPanel.classList.add("hidden");
     recalculateTimelineBounds();
     filterMarkersByTimeline();
 }
@@ -329,8 +332,12 @@ function backToMyMapline() {
     }
     markers = myMarkers;
     isReadOnly = false;
-    addMarkerPanel.classList.remove("hidden");
+    //addMarkerPanel.classList.remove("hidden");
     recalculateTimelineBounds();
     filterMarkersByTimeline();
 }
+function saveMapline() {
+    console.log(myMarkers);
+}
+saveMaplineButton.addEventListener('click', saveMapline);
 recalculateTimelineBounds();
