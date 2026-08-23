@@ -11,9 +11,9 @@ let monthNames = [
     "JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE",
     "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"
 ];
-let nextMarkerId = 1;
+let nextMarkerId = crypto.randomUUID();
 let newMarkers = [];
-let deletedMarkers = [];
+let deletedMarkerIds = [];
 let myMarkers = [];
 let markers = myMarkers;
 let isReadOnly = false;
@@ -37,6 +37,8 @@ let editImagePreview = document.getElementById("editImagePreview");
 let editMarkerDoneButton = document.getElementById("editMarkerDoneButton");
 let saveMaplineButton = document.getElementById("saveMaplineButton");
 addMarkerPanel.classList.add("hidden");
+let currentMapId = null;
+let currentUser = "abc123"; // temporary placeholder
 
 function formatDateLabel(date) {
     return monthNames[date.getMonth()] + " " + date.getFullYear();
@@ -154,6 +156,7 @@ function createLeafletMarkerForRecord(record, readOnly) {
     record.leafletMarker = leafletMarker;
 }
 function deleteMarkerRecord(record) {
+    deletedMarkerIds.push(record.id);
     map.removeLayer(record.leafletMarker);
     let remainingMarkers = [];
     for (let i = 0; i < markers.length; i++) {
@@ -264,10 +267,11 @@ addMarkerButton.addEventListener('click', function () {
         imageSrc: null,
         leafletMarker: null
     };
-    nextMarkerId++;
+    nextMarkerId = crypto.randomUUID();
     console.log("adding marker", record);
     createLeafletMarkerForRecord(record, false);
     markers.push(record);
+    newMarkers.push(convertForDB(record));
     recalculateTimelineBounds();
     filterMarkersByTimeline();
     yCoordinateInput.value = "";
@@ -288,10 +292,11 @@ map.on('dblclick', function(event) {
         imageSrc: null,
         leafletMarker: null
     };
-    nextMarkerId++;
+    nextMarkerId = crypto.randomUUID();
     console.log("adding marker", record);
     createLeafletMarkerForRecord(record, false);
     markers.push(record);
+    newMarkers.push(convertForDB(record));
     recalculateTimelineBounds();
     filterMarkersByTimeline();
 });
@@ -336,8 +341,56 @@ function backToMyMapline() {
     recalculateTimelineBounds();
     filterMarkersByTimeline();
 }
-function saveMapline() {
+function loadMapline(){
+    console.log("loading MapLine");
+}
+function convertForDB(record){
+    dbMarker = {
+        id: record.id,
+        lat: record.lat,
+        lng: record.lng,
+        title: record.title,
+        description: record.description,
+        eventDate: record.eventDate.toISOString(),
+        imageSrc: null
+    };
+    return dbMarker
+}
+async function ensureMapExists() {
+    if (currentMapId !== null) return currentMapId;
+
+    let response = await fetch('/create-map', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: headerTitle.textContent, owner: currentUser })
+    });
+    let data = await response.json();
+    currentMapId = data.id;
+    return currentMapId;
+}
+async function saveMapline() {
     console.log(myMarkers);
+    console.log(newMarkers);
+    console.log(deletedMarkerIds);
+    let mapId = await ensureMapExists();
+    console.log('map exists')
+    let toDB = {
+        mapId: mapId,
+        markersToAdd: newMarkers,
+        markersToDelete: deletedMarkerIds
+    };
+
+    let response = await fetch('/update-map', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(toDB)
+    });
+
+    if (response.ok) {
+        newMarkers = [];
+        deletedMarkerIds = [];
+    }
 }
 saveMaplineButton.addEventListener('click', saveMapline);
+loadMapline();
 recalculateTimelineBounds();

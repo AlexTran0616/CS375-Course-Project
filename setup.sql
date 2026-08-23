@@ -1,29 +1,33 @@
 DROP DATABASE IF EXISTS accounts;
 CREATE DATABASE accounts;
 \c accounts
+
 CREATE TABLE accounts (
     id SERIAL PRIMARY KEY,
-    username VARCHAR(30),
+    username VARCHAR(30) UNIQUE,
     password VARCHAR(30)
 );
+
 CREATE TABLE friends (
     id SERIAL PRIMARY KEY,
     user_id INT,
     friend_id INT,
-    status VARCHAR(30)
+    status VARCHAR(8)
 );
+
 CREATE TABLE maps (
     id SERIAL PRIMARY KEY,
-    owner_id INT REFERENCES accounts(id),
-    name VARCHAR(50)
+    owner VARCHAR(30) REFERENCES accounts(username),
+    name VARCHAR(150)
 );
 
 CREATE TABLE markers (
     id SERIAL PRIMARY KEY,
     map_id INT REFERENCES maps(id) ON DELETE CASCADE,
+    marker_id VARCHAR(36),
     lat DOUBLE PRECISION NOT NULL,
     lng DOUBLE PRECISION NOT NULL,
-    title TEXT,
+    title VARCHAR(150),
     description TEXT,
     image BYTEA,
     dt TIMESTAMP

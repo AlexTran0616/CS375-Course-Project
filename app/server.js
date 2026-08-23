@@ -225,7 +225,56 @@ app.get("/:userID", async (req, res) => {
 
     }
 });
+
+app.post("/create-map", async (req, res) => {
+    let mapOwner = req.body.owner;
+    let mapName = req.body.name;
     
+    try{
+        let result = await pool.query(
+            "INSERT INTO maps (owner, name) VALUES ($1, $2) RETURNING *",
+            [mapOwner, mapName]
+        );
+        console.log("New MapLine added:", result.rows[0]);
+    } catch(error){
+        console.error(error);
+        res.status(500).json({ error: "Database error" });
+    }
+});
+
+app.post("/update-map", async (req, res) => {
+    let markersToAdd = req.body.markersToAdd;
+    let markersToDelete = req.body.markersToDelete;
+    let mapID = req.body.userID;
+
+    try {
+        for(let marker of markersToAdd){
+            await pool.query(
+                "INSERT INTO markers (map_id, marker_id, lat, lng, title, description, image, dt) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *",
+                [mapID, marker.id, marker.lat, marker.lng, marker.title, marker.description, marker.imageSrc, marker.eventDate]
+            );
+        }
+        
+        for(let marker of markersToDelete){
+            await pool.query(
+                "DELETE FROM markers WHERE marker_id = $1 RETURNING *",
+                [marker.id]
+            );
+        }
+        
+        console.log("Map updated");
+        res.send();
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Database error" });
+    }
+});
+
+app.get("/load-map", async (req, res) => {
+
+});
+
 app.listen(port, hostname, () => {
   console.log(`Server running: http://${hostname}:${port}`);
 });
