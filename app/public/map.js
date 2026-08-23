@@ -37,8 +37,8 @@ let editImagePreview = document.getElementById("editImagePreview");
 let editMarkerDoneButton = document.getElementById("editMarkerDoneButton");
 let saveMaplineButton = document.getElementById("saveMaplineButton");
 addMarkerPanel.classList.add("hidden");
-let currentMapId = null;
-let currentUser = "abc123"; // temporary placeholder
+let currentMapId = 1;
+let currentUser = "abc"; //  placeholder
 
 function formatDateLabel(date) {
     return monthNames[date.getMonth()] + " " + date.getFullYear();
@@ -341,8 +341,23 @@ function backToMyMapline() {
     recalculateTimelineBounds();
     filterMarkersByTimeline();
 }
-function loadMapline(){
-    console.log("loading MapLine");
+function convertForRecord(dbMarker){
+    let dt = new Date(dbMarker.dt);
+    dt.setHours(0,0,0,0);
+    dbMarker.eventDate = dt;
+    dbMarker.id = dbMarker.marker_id;
+    createLeafletMarkerForRecord(dbMarker, false);
+    return dbMarker;
+}
+async function loadMapline(){
+    console.log("Loading MapLine...");
+    let response = await fetch(`/load-map/1`); //1 is a placeholder value
+    myMarkers = await response.json();
+    myMarkers = myMarkers.map(convertForRecord);
+    markers = myMarkers;
+    recalculateTimelineBounds();
+    filterMarkersByTimeline();
+    console.log("MapLine loaded");
 }
 function convertForDB(record){
     dbMarker = {
@@ -374,6 +389,7 @@ async function saveMapline() {
     console.log(deletedMarkerIds);
     let mapId = await ensureMapExists();
     console.log('map exists')
+    console.log(mapId)
     let toDB = {
         mapId: mapId,
         markersToAdd: newMarkers,

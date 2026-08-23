@@ -81,7 +81,7 @@ app.post("/search", async (req, res) => {
 
     try {
         const result = await pool.query(
-            "SELECT id, username FROM accounts WHERE username LIKE $1",
+            "select marker_id,lat,lng,title,description,image,dt from markers WHERE map_id LIKE $1",
             [`${username}%`]
         );
     
@@ -236,6 +236,7 @@ app.post("/create-map", async (req, res) => {
             [mapOwner, mapName]
         );
         console.log("New MapLine added:", result.rows[0]);
+        res.json(result.rows[0]);
     } catch(error){
         console.error(error);
         res.status(500).json({ error: "Database error" });
@@ -245,14 +246,17 @@ app.post("/create-map", async (req, res) => {
 app.post("/update-map", async (req, res) => {
     let markersToAdd = req.body.markersToAdd;
     let markersToDelete = req.body.markersToDelete;
-    let mapID = req.body.userID;
-
+    let mapId = req.body.mapId;
+    console.log(markersToAdd);
+    console.log(markersToDelete);
+    console.log(mapId);
     try {
         for(let marker of markersToAdd){
             await pool.query(
                 "INSERT INTO markers (map_id, marker_id, lat, lng, title, description, image, dt) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *",
-                [mapID, marker.id, marker.lat, marker.lng, marker.title, marker.description, marker.imageSrc, marker.eventDate]
+                [mapId, marker.id, marker.lat, marker.lng, marker.title, marker.description, marker.imageSrc, marker.eventDate]
             );
+            console.log("Marker added");
         }
         
         for(let marker of markersToDelete){
@@ -260,6 +264,7 @@ app.post("/update-map", async (req, res) => {
                 "DELETE FROM markers WHERE marker_id = $1 RETURNING *",
                 [marker.id]
             );
+            console.log("Marker deleted")
         }
         
         console.log("Map updated");
@@ -271,8 +276,21 @@ app.post("/update-map", async (req, res) => {
     }
 });
 
-app.get("/load-map", async (req, res) => {
-
+app.get("/load-map/:mapID", async (req, res) => {
+    let mapId = parseInt(req.params.mapID);
+    console.log("loading request received");
+    try {
+        let result = await pool.query(
+            "SELECT marker_id, lat, lng, title, description, image, dt FROM markers WHERE map_id = $1;",
+            [mapId]
+        );
+        console.log(result.rows);
+        res.json(result.rows);
+    
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Database error" });
+    }
 });
 
 app.listen(port, hostname, () => {
