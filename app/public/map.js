@@ -37,8 +37,12 @@ let editImagePreview = document.getElementById("editImagePreview");
 let editMarkerDoneButton = document.getElementById("editMarkerDoneButton");
 let saveMaplineButton = document.getElementById("saveMaplineButton");
 addMarkerPanel.classList.add("hidden");
-let currentMapId = 1;
-let currentUser = "abc"; //  placeholder
+let currentMapId = null;
+let currentUser = localStorage.getItem("currentUser");
+if (!currentUser) {
+    console.log("null user");
+    window.location.href = "login.html"; // no user info, force re-login
+}
 
 function formatDateLabel(date) {
     return monthNames[date.getMonth()] + " " + date.getFullYear();
@@ -350,14 +354,18 @@ function convertForRecord(dbMarker){
     return dbMarker;
 }
 async function loadMapline(){
-    console.log("Loading MapLine...");
-    let response = await fetch(`/load-map/1`); //1 is a placeholder value
-    myMarkers = await response.json();
-    myMarkers = myMarkers.map(convertForRecord);
-    markers = myMarkers;
-    recalculateTimelineBounds();
-    filterMarkersByTimeline();
-    console.log("MapLine loaded");
+    if(currentMapId){
+        console.log("Loading MapLine...");
+        let response = await fetch(`/load-map/${currentMapId}`);
+        myMarkers = await response.json();
+        myMarkers = myMarkers.map(convertForRecord);
+        markers = myMarkers;
+        recalculateTimelineBounds();
+        filterMarkersByTimeline();
+        console.log("MapLine loaded");
+    } else {
+        console.log("No map id found");
+    }
 }
 function convertForDB(record){
     dbMarker = {
@@ -372,16 +380,20 @@ function convertForDB(record){
     return dbMarker
 }
 async function ensureMapExists() {
-    if (currentMapId !== null) return currentMapId;
-
-    let response = await fetch('/create-map', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: headerTitle.textContent, owner: currentUser })
-    });
-    let data = await response.json();
-    currentMapId = data.id;
-    return currentMapId;
+    if (currentMapId){
+        loadMapline();
+        return currentMapId;
+    } else {
+        let response = await fetch('/create-map', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: headerTitle.textContent, owner: currentUser })
+        });
+        let data = await response.json();
+        currentMapId = data.id;
+        loadMapline();
+        return currentMapId;
+    }
 }
 async function saveMapline() {
     console.log(myMarkers);
@@ -408,5 +420,5 @@ async function saveMapline() {
     }
 }
 saveMaplineButton.addEventListener('click', saveMapline);
-loadMapline();
+ensureMapExists();
 recalculateTimelineBounds();

@@ -26,7 +26,8 @@ document.querySelector("#login").addEventListener("click", async function () {
 
             console.log("Login successful:", data);
             localStorage.setItem("userID", data.id);
-            window.location.href = "search.html";
+            localStorage.setItem("currentUser", data.username);
+            window.location.href = "map.html";
 
         } else {
 

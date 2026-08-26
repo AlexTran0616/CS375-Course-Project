@@ -20,6 +20,10 @@ pool.connect().then(function () {
 app.use(express.json());
 app.use(express.static("public"));
 
+app.get("/", (req, res) => {
+    res.sendFile("public/login.html", {root: __dirname });
+});
+
 app.post("/register", async (req, res) => {
     const username = req.body.username;
     const password = req.body.password;
@@ -62,7 +66,8 @@ app.post("/login", async (req, res) => {
         res.json({
             success: true,
             message: "Login successful!",
-            id: result.rows[0].id
+            id: result.rows[0].id,
+            username: result.rows[0].username
         });
 
     } catch (error) {
@@ -229,14 +234,22 @@ app.get("/:userID", async (req, res) => {
 app.post("/create-map", async (req, res) => {
     let mapOwner = req.body.owner;
     let mapName = req.body.name;
-    
     try{
         let result = await pool.query(
-            "INSERT INTO maps (owner, name) VALUES ($1, $2) RETURNING *",
-            [mapOwner, mapName]
+            "SELECT * FROM maps WHERE owner = $1",
+            [mapOwner]
         );
-        console.log("New MapLine added:", result.rows[0]);
+        if (!result.rows[0]){
+            result = await pool.query(
+                "INSERT INTO maps (owner, name) VALUES ($1, $2) RETURNING *",
+                [mapOwner, mapName]
+            );
+            console.log("New MapLine added:", result.rows[0]);
+        } else {
+            console.log("Map already exists", result.rows[0]);
+        }
         res.json(result.rows[0]);
+        
     } catch(error){
         console.error(error);
         res.status(500).json({ error: "Database error" });
@@ -284,7 +297,8 @@ app.get("/load-map/:mapID", async (req, res) => {
             "SELECT marker_id, lat, lng, title, description, image, dt FROM markers WHERE map_id = $1;",
             [mapId]
         );
-        console.log(result.rows);
+        //console.log(result.rows);
+        console.log("map loaded");
         res.json(result.rows);
     
     } catch (error) {
