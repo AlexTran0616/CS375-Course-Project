@@ -38,6 +38,9 @@ let saveMaplineButton = document.getElementById("saveMaplineButton");
 addMarkerPanel.classList.add("hidden");
 let currentMapId = null;
 let currentUser = localStorage.getItem("currentUser");
+
+const params = new URLSearchParams(window.location.search);
+const viewingMapID = params.get("mapID");
 if (!currentUser) {
     console.log("null user");
     window.location.href = "login.html"; // no user info, force re-login
@@ -276,6 +279,9 @@ addMarkerButton.addEventListener('click', function () {
     eventDateInput.value = "";
 });
 map.on('dblclick', function(event) {
+    if (isReadOnly) {
+        return;
+    }
     let today = new Date();
     today.setHours(0,0,0,0);
     let record = {
@@ -359,7 +365,9 @@ function convertForRecord(dbMarker){
     dbMarker.eventDate = dt;
     dbMarker.id = dbMarker.marker_id;
     dbMarker.imageSrc = dbMarker.image;
-    createLeafletMarkerForRecord(dbMarker, false);
+
+    createLeafletMarkerForRecord(dbMarker, isReadOnly);
+
     return dbMarker;
 }
 async function loadMapline(){
@@ -389,21 +397,39 @@ function convertForDB(record){
     return dbMarker
 }
 async function ensureMapExists() {
-    if(!currentUser){
+
+    if (!currentUser) {
         return null;
     }
-    if (currentMapId){
+
+    if (viewingMapID) {
+        currentMapId = parseInt(viewingMapID);
+        isReadOnly = true;
+        addMarkerPanel.classList.add("hidden");
         loadMapline();
         return currentMapId;
-    } else {
+    }
+
+    if (currentMapId) {
+        isReadOnly = false;
+        addMarkerPanel.classList.remove("hidden");
+        loadMapline();
+        return currentMapId;
+    }else {
         let response = await fetch('/create-map', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: headerTitle.textContent, owner: currentUser })
+            body: JSON.stringify({
+                name: headerTitle.textContent,
+                owner: currentUser
+            })
         });
+
         let data = await response.json();
+
         currentMapId = data.id;
         loadMapline();
+
         return currentMapId;
     }
 }

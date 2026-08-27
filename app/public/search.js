@@ -163,10 +163,17 @@ async function loadFriends() {
             const viewButton = document.createElement("button");
             viewButton.textContent = "View Timeline";
 
-            viewButton.addEventListener("click", function() {
+            viewButton.addEventListener("click", async function() {
 
-                window.location.href = "/" + account.id;
-
+                const response = await fetch(`/get-map-id/${account.id}`);
+                const data = await response.json();
+            
+                if (response.ok) {
+                    window.location.href = `/map.html?mapID=${data.mapID}`;
+                } else {
+                    alert(data.error);
+                }
+            
             });
 
             friend.appendChild(name);
@@ -180,6 +187,10 @@ async function loadFriends() {
 
     }
 }
+
+document.getElementById("backToMaplineButton").addEventListener("click", function () {
+    window.location.href = "map.html";
+});
 
 
 loadFriendRequests();

@@ -287,11 +287,44 @@ app.post("/update-map", async (req, res) => {
         }
         
         console.log("Map updated");
+        console.log("SAVING MAP ID:", mapId);
         res.send();
+        
 
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: "Database error" });
+    }
+});
+
+app.get("/get-map-id/:userID", async (req, res) => {
+
+    const userID = req.params.userID;
+
+    try {
+
+        const result = await pool.query(
+            "SELECT id FROM maps WHERE owner = (SELECT username FROM accounts WHERE id = $1)",
+            [userID]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                error: "Map not found."
+            });
+        }
+
+        res.json({
+            mapID: result.rows[0].id
+        });
+
+    } catch (error) {
+
+        console.error(error);
+        res.status(500).json({
+            error: "Database error."
+        });
+
     }
 });
 
