@@ -17,7 +17,7 @@ pool.connect().then(function () {
     console.log("Could not connect to database:", error.message);
 });
 
-app.use(express.json());
+app.use(express.json({ limit: "10mb" }));
 app.use(express.static("public"));
 
 app.get("/", (req, res) => {
@@ -86,7 +86,7 @@ app.post("/search", async (req, res) => {
 
     try {
         const result = await pool.query(
-            "select marker_id,lat,lng,title,description,image,dt from markers WHERE map_id LIKE $1",
+            "SELECT id, username FROM accounts WHERE username LIKE $1",
             [`${username}%`]
         );
     
@@ -259,10 +259,9 @@ app.post("/create-map", async (req, res) => {
 app.post("/update-map", async (req, res) => {
     let markersToAdd = req.body.markersToAdd;
     let markersToDelete = req.body.markersToDelete;
+    let markersToEdit = req.body.markersToEdit;
     let mapId = req.body.mapId;
-    console.log(markersToAdd);
-    console.log(markersToDelete);
-    console.log(mapId);
+
     try {
         for(let marker of markersToAdd){
             await pool.query(
@@ -271,11 +270,18 @@ app.post("/update-map", async (req, res) => {
             );
             console.log("Marker added");
         }
-        
+        for (let marker of markersToEdit) {
+            await pool.query(
+                "UPDATE markers SET lat = $1, lng = $2, title = $3, description = $4, image = $5, dt = $6 WHERE marker_id = $7",
+                [marker.lat, marker.lng, marker.title, marker.description, marker.imageSrc, marker.eventDate, marker.id]
+            );
+            console.log("Marker updated");
+        }
         for(let marker of markersToDelete){
+            console.log(marker);
             await pool.query(
                 "DELETE FROM markers WHERE marker_id = $1 RETURNING *",
-                [marker.id]
+                [marker]
             );
             console.log("Marker deleted")
         }
@@ -299,7 +305,11 @@ app.get("/load-map/:mapID", async (req, res) => {
         );
         //console.log(result.rows);
         console.log("map loaded");
-        res.json(result.rows);
+        let rows = result.rows.map(row => ({
+            ...row,
+            image: row.image ? row.image.toString('utf8') : null
+        }));
+        res.json(rows);
     
     } catch (error) {
         console.error(error);

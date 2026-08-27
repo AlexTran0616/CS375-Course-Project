@@ -12,8 +12,7 @@ let monthNames = [
     "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"
 ];
 let nextMarkerId = crypto.randomUUID();
-let newMarkers = [];
-let deletedMarkerIds = [];
+let pendingChanges = new Map(); // id -> { type: 'add' | 'edit' | 'delete', data }
 let myMarkers = [];
 let markers = myMarkers;
 let isReadOnly = false;
@@ -160,18 +159,9 @@ function createLeafletMarkerForRecord(record, readOnly) {
     record.leafletMarker = leafletMarker;
 }
 function deleteMarkerRecord(record) {
-    deletedMarkerIds.push(record.id);
+    markChanged(record, 'delete');
     map.removeLayer(record.leafletMarker);
-    let remainingMarkers = [];
-    for (let i = 0; i < markers.length; i++) {
-        if (markers[i] !== record) {
-            remainingMarkers.push(markers[i]);
-        }
-    }
-    markers.length = 0;
-    for (let i = 0; i < remainingMarkers.length; i++) {
-        markers.push(remainingMarkers[i]);
-    }
+    markers = markers.filter(m => m !== record);
     recalculateTimelineBounds();
     filterMarkersByTimeline();
 }
@@ -231,6 +221,7 @@ editMarkerDoneButton.addEventListener('click', function () {
             recalculateTimelineBounds();
             filterMarkersByTimeline();
             closeEditMarkerModal();
+            markChanged(record, 'edit'); 
         };
         reader.readAsDataURL(file);
     } else {
@@ -238,6 +229,7 @@ editMarkerDoneButton.addEventListener('click', function () {
         recalculateTimelineBounds();
         filterMarkersByTimeline();
         closeEditMarkerModal();
+        markChanged(record, 'edit'); 
     }
 });
 addMarkerButton.addEventListener('click', function () {
@@ -275,7 +267,7 @@ addMarkerButton.addEventListener('click', function () {
     console.log("adding marker", record);
     createLeafletMarkerForRecord(record, false);
     markers.push(record);
-    newMarkers.push(convertForDB(record));
+    markChanged(record, 'add');
     recalculateTimelineBounds();
     filterMarkersByTimeline();
     yCoordinateInput.value = "";
@@ -300,7 +292,7 @@ map.on('dblclick', function(event) {
     console.log("adding marker", record);
     createLeafletMarkerForRecord(record, false);
     markers.push(record);
-    newMarkers.push(convertForDB(record));
+    markChanged(record, 'add');
     recalculateTimelineBounds();
     filterMarkersByTimeline();
 });
@@ -345,11 +337,28 @@ function backToMyMapline() {
     recalculateTimelineBounds();
     filterMarkersByTimeline();
 }
+function markChanged(record, type) {
+    if (type === 'delete') {
+        // if it was never saved to the DB, deleting it is a true no-op — just drop it
+        if (pendingChanges.get(record.id)?.type === 'add') {
+            pendingChanges.delete(record.id);
+            return;
+        }
+        pendingChanges.set(record.id, { type: 'delete' });
+        return;
+    }
+
+    // if already marked as 'add', keep it as 'add' with updated data (don't downgrade to 'edit')
+    let existing = pendingChanges.get(record.id);
+    let effectiveType = existing?.type === 'add' ? 'add' : type;
+    pendingChanges.set(record.id, { type: effectiveType, data: convertForDB(record) });
+}
 function convertForRecord(dbMarker){
     let dt = new Date(dbMarker.dt);
     dt.setHours(0,0,0,0);
     dbMarker.eventDate = dt;
     dbMarker.id = dbMarker.marker_id;
+    dbMarker.imageSrc = dbMarker.image;
     createLeafletMarkerForRecord(dbMarker, false);
     return dbMarker;
 }
@@ -375,11 +384,14 @@ function convertForDB(record){
         title: record.title,
         description: record.description,
         eventDate: record.eventDate.toISOString(),
-        imageSrc: null
+        imageSrc: record.imageSrc
     };
     return dbMarker
 }
 async function ensureMapExists() {
+    if(!currentUser){
+        return null;
+    }
     if (currentMapId){
         loadMapline();
         return currentMapId;
@@ -396,27 +408,26 @@ async function ensureMapExists() {
     }
 }
 async function saveMapline() {
-    console.log(myMarkers);
-    console.log(newMarkers);
-    console.log(deletedMarkerIds);
-    let mapId = await ensureMapExists();
-    console.log('map exists')
-    console.log(mapId)
-    let toDB = {
-        mapId: mapId,
-        markersToAdd: newMarkers,
-        markersToDelete: deletedMarkerIds
-    };
+    let mapId = currentMapId;
+
+    let markersToAdd = [];
+    let markersToEdit = [];
+    let markersToDelete = [];
+
+    for (let [id, change] of pendingChanges) {
+        if (change.type === 'add') markersToAdd.push(change.data);
+        else if (change.type === 'edit') markersToEdit.push(change.data);
+        else if (change.type === 'delete') markersToDelete.push(id);
+    }
 
     let response = await fetch('/update-map', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(toDB)
+        body: JSON.stringify({ mapId, markersToAdd, markersToEdit, markersToDelete })
     });
 
     if (response.ok) {
-        newMarkers = [];
-        deletedMarkerIds = [];
+        pendingChanges.clear();
     }
 }
 saveMaplineButton.addEventListener('click', saveMapline);
