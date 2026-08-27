@@ -12,7 +12,7 @@ CREATE TABLE friends (
     id SERIAL PRIMARY KEY,
     user_id INT,
     friend_id INT,
-    status VARCHAR(8)
+    status VARCHAR(8) DEFAULT 'pending'
 );
 
 CREATE TABLE maps (

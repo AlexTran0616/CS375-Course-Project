@@ -406,6 +406,7 @@ async function ensureMapExists() {
         currentMapId = parseInt(viewingMapID);
         isReadOnly = true;
         addMarkerPanel.classList.add("hidden");
+        saveMaplineButton.classList.add("hidden");
         loadMapline();
         return currentMapId;
     }
