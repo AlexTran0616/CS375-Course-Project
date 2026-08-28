@@ -2,22 +2,57 @@
 <html>
 <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Login</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-    <form id = "loginForm">
-        <h1>Login</h1>
+    <div class="login-page">
+        <div class="login-badge">
+            <p class="login-badge-subtitle">Welcome to</p>
+            <div class="login-badge-title">
+                <span class="login-icon-circle">
+                    <img class="login-icon-logo" src="newandimprovedmaplogo.png" alt="Mapline logo">
+                </span>
+                <span class="login-title-text">MAPLINE</span>
+            </div>
+        </div>
+        <div class="login-card">
+            <h2>Returning User:</h2>
+            <form id="loginForm">
+                <label for="loginUsername">Email:</label>
+                <input id="loginUsername" type="text">
+                <label for="loginPassword">Password:</label>
+                <div class="password-field">
+                    <input id="loginPassword" type="password">
+                    <button id="toggleLoginPassword" class="toggle-password-button" type="button">
+                        <i class="fa-solid fa-eye"></i>
+                    </button>
+                </div>
+                <button id="login" class="login-page-button" type="button">Login</button>
+            </form>
+            <h2>Create Account:</h2>
+            <form id="registerForm">
+                <label for="registerUsername">Email:</label>
+                <input id="registerUsername" type="text">
+                <label for="registerPassword">Password:</label>
+                <div class="password-field">
+                    <input id="registerPassword" type="password">
+                    <button id="toggleRegisterPassword" class="toggle-password-button" type="button">
+                        <i class="fa-solid fa-eye"></i>
+                    </button>
+                </div>
 
-        <input id = "username" type = "text">
-        <input id = "password" type = "text">
-        <button id = "login" type = "button"> login </button> 
-        <p>
-            Don't have an account?
-            <a href="register.html">Create an account</a>
-        </p>
-    </form>
+                <button id="createAccountButton" class="login-page-button" type="button">Create</button>
+            </form>
+
+        </div>
+
+    </div>
 
     <script src="login.js"></script>
 </body>
