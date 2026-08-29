@@ -63,7 +63,7 @@ document.querySelector("#searchButton").addEventListener("click", async function
                 }
 
             });
-
+            user.className = "result-row";
             user.appendChild(name);
             user.appendChild(addButton);
             results.appendChild(user);
@@ -87,7 +87,11 @@ async function loadFriendRequests() {
         const requests = document.querySelector("#friendRequests");
 
         requests.innerHTML = "";
-
+        if (data.length === 0) {
+            console.log("no friend requests");
+            document.getElementById("friendRequestsHeader").style.display = "none";
+            return;
+        }
         for (let i = 0; i < data.length; i++) {
 
             const account = data[i];
@@ -129,7 +133,7 @@ async function loadFriendRequests() {
                 }
 
             });
-
+            request.className = "result-row";
             request.appendChild(name);
             request.appendChild(acceptButton);
             requests.appendChild(request);
@@ -175,7 +179,7 @@ async function loadFriends() {
                 }
             
             });
-
+            friend.className = "result-row";
             friend.appendChild(name);
             friend.appendChild(viewButton);
             friendsList.appendChild(friend);
@@ -191,7 +195,9 @@ async function loadFriends() {
 document.getElementById("backToMaplineButton").addEventListener("click", function () {
     window.location.href = "map.html";
 });
-
+document.getElementById("logoutButton"). addEventListener("click", function () {
+    window.location.href = "login.html";
+})
 
 loadFriendRequests();
 loadFriends();

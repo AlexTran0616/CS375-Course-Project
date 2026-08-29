@@ -4,34 +4,88 @@
 <head>
     <meta charset="utf-8" />
     <title>Search</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            padding: 0 50px; /* small horizontal padding */
+            background-image: url(images/World-Map-PNG-Picture.png);
+            background-repeat: no-repeat;
+            background-size: cover;
+        }
+        .layout {
+            display: flex;
+            justify-content: space-between;
+            align-items: stretch;
+        }
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-top: 30px;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+        }
+        .big-button {
+            padding: 16px 20px;
+            font-size: 18px;
+        }
+        #searchSection h1 {
+            white-space: nowrap;
+            align-self: center;
+        }
+        .page-section {
+            background-color: rgb(182, 230, 238);
+            border: 2px solid rgb(31, 27, 27);
+            height: 100vh;
+            width: 50vh;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #results {
+            margin-top: 30px;
+        }
+        .result-row{
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+    </style>
 </head>
 
 <body>
-    <div id = "searchSection">
+    <div class="layout">
+        <div id = "searchSection" class="page-section">
+            <form id = "searchForm">
+                <h1>Search Users</h1>
 
-        <form id = "searchForm">
-            <h1>Search Users</h1>
+                <input id = "search" type = "text" placeholder = "Search for friend">
+                <button id = "searchButton" type = "button">Search</button> 
+            </form>
+            <div id = "results"></div>
+        </div>
 
-            <input id = "search" type = "text" placeholder = "Search for friend">
-            <button id = "searchButton" type = "button">Search</button> 
-        </form>
+        <div id = "friendsSection" class="page-section">
+            <h2 id = "friendRequestsHeader">Friend Requests</h2>
+            <div id = "friendRequests"></div>
 
-        <div id = "results"></div>
-
+            <h2>Friends</h2>
+            <div id = "friendsList"></div>
+        </div>
     </div>
-
-
-    <div id = "friendsSection">
-        <h2>Friend Requests</h2>
-        <div id = "friendRequests"></div>
-
-        <h2>Friends</h2>
-        <div id = "friendsList"></div>
-
+    <div class="btn-group">
+        <button id="logoutButton" class="big-button">Logout</button>
+        <button id="backToMaplineButton" class="big-button">Back to My Mapline</button>
     </div>
-
-    <button id="backToMaplineButton">Back to My Mapline</button>
     <script src="search.js"></script>
 </body>
 </html>
