@@ -1,6 +1,12 @@
-DROP DATABASE IF EXISTS accounts;
-CREATE DATABASE accounts;
-\c accounts
+\c cs375mapline2026
+
+-- use this to clear any existing tables to reinsert fresh data
+-- you'll need to add a DROP TABLE for every table you add
+-- we don't drop the database because that causes errors with fly
+DROP TABLE IF EXISTS markers;
+DROP TABLE IF EXISTS maps;
+DROP TABLE IF EXISTS friends;
+DROP TABLE IF EXISTS accounts;
 
 CREATE TABLE accounts (
     id SERIAL PRIMARY KEY,
@@ -32,3 +38,5 @@ CREATE TABLE markers (
     image BYTEA,
     dt TIMESTAMP
 );
+
+\q

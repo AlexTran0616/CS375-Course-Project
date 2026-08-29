@@ -1,24 +1,41 @@
-const pg = require("pg");
-const express = require("express");
+let express = require("express");
+let { Pool } = require("pg");
+
+// make this script's dir the cwd
+// b/c npm run start doesn't cd into src/ to run this
+// and if we aren't in its cwd, all relative paths will break
+process.chdir(__dirname);
+
+let port = 3000;
+let host;
+let databaseConfig;
+// fly.io sets NODE_ENV to production automatically, otherwise it's unset when running locally
+if (process.env.NODE_ENV == "production") {
+	host = "0.0.0.0";
+	databaseConfig = { connectionString: process.env.DATABASE_URL };
+} else {
+	host = "localhost";
+	let { PGUSER, PGPASSWORD, PGDATABASE, PGHOST, PGPORT } = process.env;
+	databaseConfig = { PGUSER, PGPASSWORD, PGDATABASE, PGHOST, PGPORT };
+}
 
 let app = express();
-let port = 3000;
-let hostname = "localhost";
-
+app.use(express.json());
 app.use(express.static("public"));
 
-const env = require("../env.json");
-const Pool = pg.Pool;
-const pool = new Pool(env);
+// uncomment these to debug
+// console.log(JSON.stringify(process.env, null, 2));
+// console.log(JSON.stringify(databaseConfig, null, 2));
 
-pool.connect().then(function () {
-  console.log(`Connected to database ${env.database}`);
-}).catch(function (error) {
-    console.log("Could not connect to database:", error.message);
+let pool = new Pool(databaseConfig);
+pool.connect().then(() => {
+	console.log("Connected to db");
 });
 
-app.use(express.json({ limit: "10mb" }));
-app.use(express.static("public"));
+/*
+KEEP EVERYTHING ABOVE HERE
+REPLACE THE FOLLOWING WITH YOUR SERVER CODE 
+*/
 
 app.get("/", (req, res) => {
     res.sendFile("public/login.html", {root: __dirname });
@@ -350,6 +367,10 @@ app.get("/load-map/:mapID", async (req, res) => {
     }
 });
 
-app.listen(port, hostname, () => {
-  console.log(`Server running: http://${hostname}:${port}`);
+/*
+KEEP EVERYTHING BELOW HERE
+*/
+
+app.listen(port, host, () => {
+	console.log(`http://${host}:${port}`);
 });
