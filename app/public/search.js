@@ -173,7 +173,7 @@ async function loadFriends() {
                 const data = await response.json();
             
                 if (response.ok) {
-                    window.location.href = `/map.html?mapID=${data.mapID}`;
+                    window.location.href = `/map.html?mapID=${data.mapID}&friendName=${encodeURIComponent(account.username)}`;
                 } else {
                     alert(data.error);
                 }

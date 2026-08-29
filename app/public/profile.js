@@ -14,21 +14,31 @@ let editProfileAvatarInput = document.getElementById("editProfileAvatarInput");
 let changePhotoButton = document.getElementById("changePhotoButton");
 let editProfileNameInput = document.getElementById("editProfileNameInput");
 let editProfileDoneButton = document.getElementById("editProfileDoneButton");
-let savedName = localStorage.getItem("maplineName");
-let savedAvatar = localStorage.getItem("maplineAvatar");
-if (savedName) {
+let savedName = localStorage.getItem("maplineName_" + currentUser);
+let savedAvatar = localStorage.getItem("maplineAvatar_" + currentUser);
+
+const profileViewingFriendName = new URLSearchParams(window.location.search).get("friendName");
+
+if (profileViewingFriendName) {
+    headerTitle.textContent = profileViewingFriendName + "'s Mapline";
+} else if (savedName) {
     headerTitle.textContent = savedName;
 } else {
     headerTitle.textContent = "YOUR MAPLINE";
 }
+
 if (savedAvatar) {
     headerAvatar.src = savedAvatar;
 } else {
     headerAvatar.src = defaultAvatar;
 }
 headerButton.addEventListener('click', function () {
-    editProfileNameInput.value = headerTitle.textContent;
-    editProfileAvatarPreview.src = headerAvatar.src;
+    if (profileViewingFriendName) {
+        return;
+    }
+
+    editProfileNameInput.value = savedName || "YOUR MAPLINE";
+    editProfileAvatarPreview.src = savedAvatar || defaultAvatar;
     editProfileOverlay.classList.remove("hidden");
 });
 editProfileCloseButton.addEventListener('click', function () {
@@ -55,12 +65,16 @@ editProfileDoneButton.addEventListener('click', function () {
         alert("Please enter a mapline name.");
         return;
     }
+
     if (newName != "") {
         headerTitle.textContent = newName;
         headerAvatar.src = editProfileAvatarPreview.src;
-        localStorage.setItem("maplineName", newName);
-        localStorage.setItem("maplineName", newName);
-        localStorage.setItem("maplineAvatar", editProfileAvatarPreview.src);
+        savedName = newName;
+        savedAvatar = editProfileAvatarPreview.src;
+
+        localStorage.setItem("maplineName_" + currentUser, savedName);
+        localStorage.setItem("maplineAvatar_" + currentUser, savedAvatar);
     }
+
     editProfileOverlay.classList.add("hidden");
 });

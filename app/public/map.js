@@ -41,6 +41,7 @@ let currentUser = localStorage.getItem("currentUser");
 
 const params = new URLSearchParams(window.location.search);
 const viewingMapID = params.get("mapID");
+const viewingFriendName = params.get("friendName");
 if (!currentUser) {
     console.log("null user");
     window.location.href = "login.html"; // no user info, force re-login
@@ -401,12 +402,16 @@ async function ensureMapExists() {
     if (!currentUser) {
         return null;
     }
-
     if (viewingMapID) {
         currentMapId = parseInt(viewingMapID);
         isReadOnly = true;
         addMarkerPanel.classList.add("hidden");
         saveMaplineButton.classList.add("hidden");
+    
+        if (viewingFriendName) {
+            headerTitle.textContent = viewingFriendName + "'s Mapline";
+        }
+    
         loadMapline();
         return currentMapId;
     }
