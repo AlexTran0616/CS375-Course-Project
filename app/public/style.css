@@ -449,7 +449,10 @@ button {
 .login-icon-logo {
     width: 100px;
     height: 100px;
-    object-fit: contain;
+    background-image: url("images/newandimprovedmaplogo.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
 }
 .login-title-text {
     color: #098428;
